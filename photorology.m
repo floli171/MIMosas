@@ -22,7 +22,7 @@ function varargout = photorology(varargin)
 
 % Edit the above text to modify the response to help photorology
 
-% Last Modified by GUIDE v2.5 17-Oct-2017 15:02:52
+% Last Modified by GUIDE v2.5 19-Oct-2017 13:57:56
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -46,14 +46,8 @@ end
 
 % --- Executes just before photorology is made visible.
 function photorology_OpeningFcn(hObject, eventdata, handles, varargin)
-% This function has no output args, see OutputFcn.
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to photorology (see VARARGIN)
-
-% Choose default command line output for photorology
 handles.output = hObject;
+set( handles.Gamma, 'Min', 0.3, 'Max', 3, 'Value', 1);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -64,12 +58,6 @@ guidata(hObject, handles);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = photorology_OutputFcn(hObject, eventdata, handles) 
-% varargout  cell array for returning output args (see VARARGOUT);
-% hObject    handle to figure
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Get default command line output from handles structure
 varargout{1} = handles.output;
 
 
@@ -78,104 +66,80 @@ function openIMG_Callback(hObject, eventdata, handles)
 [IMGname,IMGpath] = uigetfile({'*.jpg'; '*.bmp'},'Select Image');
 IMGdirectory = strcat(IMGpath,IMGname);
 img = imread(IMGdirectory);
+
+handles.lastImg = img;
+handles.original = img;
+
+axes(handles.axes5);
 imshow(img)
+
 handles.img = img;
+setConditions(hObject, eventdata, handles)
+
 guidata(hObject,handles);
+
+my_adjust(hObject, eventdata, handles);
 
 
 % --- Executes on button press in SaveImg.
 function SaveImg_Callback(hObject, eventdata, handles)
-%guidata(hObject, handles);
-img = handles.img;
+
 [IMGname,IMGpath] = uiputfile({'*.jpg';'*.bmp'},'Save Image');
 IMGdirectory = strcat(IMGpath,IMGname);
-imwrite(img,IMGdirectory);
+imwrite(handles.img2save,IMGdirectory);
 
-
-
-
-% --- Executes on button press in IMGframe.
-function IMGframe_Callback(hObject, eventdata, handles)
-img = handles.img;
-img(25:end-25,1:25)=255;
-img(25:end-25,end-25:end)=255;
-img(1:25,25:end-25)=255;
-img(end-25:end,25:end-25)=255;
-img(1:25,1:25)=0;
-img(end-25:end,1:25)=0;
-img(1:25,end-25:end)=0;
-img(end-25:end,end-25:end);
-handles.img = img;
-guidata(hObject,handles);
-imshow(img)
 %em vez do hObject (se nao tivermos) podemos usar gcbo
 
 
-% --- Executes on slider movement.
-function Brightness_Callback(hObject, eventdata, handles)
-
-
-
-guiData(hObject,handles);
-x = getimage(handles.axes5);     %vai buscar imagem ao axes5
-axes(handles.axes4);    %escolho axes4
-A = get(hObject,'Value'); %vai buscar valor do slider
-if A>0
-   brightness = imajust(x,[0;1-A],[A;1]); %para aummentar brilho
-else
-   brightness = imajust(x,[0.9;1],[0;1]);
-end
-imshow(brightness);
-
-
-
-
-
-
-%get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-% --- Executes during object creation, after setting all properties.
-function Brightness_CreateFcn(hObject, eventdata, handles)
-
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
-end
-
-% --- Executes on slider movement.
 function Contrast_Callback(hObject, eventdata, handles)
-% hObject    handle to Contrast (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+my_adjust(hObject,eventdata,handles);
+cte = get(handles.Contrast, 'Value');
+
+set(handles.showContr, 'String', cte);      
+guidata(hObject,handles);
+
+
+
+
 
 
 % --- Executes during object creation, after setting all properties.
 function Contrast_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Contrast (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: slider controls usually have a light gray background.
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
 
 % --- Executes on slider movement.
-function Gama_Callback(hObject, eventdata, handles)
-% hObject    handle to Gama (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+function brightness_Callback(hObject, eventdata, handles)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of
-%        slider 
+my_adjust(hObject, eventdata,handles);
+cte = get(handles.brightness, 'Value');
+set(handles.showBright, 'String', cte);
+
+guidata(hObject,handles);
 
 
 % --- Executes during object creation, after setting all properties.
-function Gama_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to Gama (see GCBO)
+function brightness_CreateFcn(hObject, eventdata, handles)
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on slider movement.
+function Gamma_Callback(hObject, eventdata, handles)
+
+my_adjust(hObject,eventdata,handles); %vai buscar o resto dos valores dos sliders
+cte = get(handles.Gamma, 'Value');
+
+set(handles.showGamma, 'String', cte);
+
+guidata(hObject,handles);
+% --- Executes during object creation, after setting all properties.
+function Gamma_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to Gamma (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -183,3 +147,68 @@ function Gama_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+function my_adjust(hObject, eventdata, handles)
+img = handles.original;
+sliderBright = get(handles.brightness, 'Value');
+sliderContrast = get(handles.Contrast, 'Value')/2;
+sliderGamma = get(handles.Gamma, 'Value');
+
+%AJUSTE BRILHO
+if sliderBright>=0
+   img2 = imadjust(img,[0;1-sliderBright],[sliderBright;1]); %para aummentar brilho
+else
+   img2 = imadjust(img,[-sliderBright;1],[0;1+sliderBright]);
+end
+
+%AJUSTE CONTRASTE
+if sliderContrast>=0
+   img2 = imadjust(img2,[sliderContrast;1-sliderContrast],[0;1]); %para aummentar contraste
+else
+   img2 = imadjust(img2,[0;1],[-sliderContrast;1+sliderContrast]);
+end
+%AJUSTE GAMMA
+img2 = imadjust(img2,[],[],sliderGamma); 
+
+handles.img2save = img2;
+axes(handles.axes4);%escolho axes4
+imshow(img2);
+axes(handles.axes2);
+h=imhist(img2);
+axes(handles.axes2);
+plot(h/max(h));
+hold on
+hc=cumsum(h);
+plot(hc/max(hc), 'r');
+hold off
+%imshow(cumsum(imhist(img),2)); %not working
+
+guidata(hObject,handles);
+
+function setConditions(hObject, eventdata, handles)
+set(handles.Gamma, 'Value', 1);
+set(handles.Contrast, 'Value',0);
+set(handles.brightness, 'Value', 0);
+
+set(handles.showGamma, 'String', 1);
+set(handles.showContr, 'String', 0);
+set(handles.showBright, 'String', 0);
+
+
+% --- Executes on button press in undoB.
+function undoB_Callback(hObject, eventdata, handles)
+
+lastImg = handles.lastImg;  %vamos buscar a última imagem salva para fazer undo
+handles.img = lastImg;
+axes(handles.axes4);
+imshow(lastImg);
+
+axes(handles.axes2);
+imhist(lastImg);
+%cumsum(imhist(lastImg)); %not working
+setConditions(hObject, eventdata, handles);
+guidata(hObject,handles);
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over undoB.
