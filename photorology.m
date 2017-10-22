@@ -22,7 +22,7 @@ function varargout = photorology(varargin)
 
 % Edit the above text to modify the response to help photorology
 
-% Last Modified by GUIDE v2.5 19-Oct-2017 13:57:56
+% Last Modified by GUIDE v2.5 22-Oct-2017 14:36:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -170,18 +170,17 @@ end
 %AJUSTE GAMMA
 img2 = imadjust(img2,[],[],sliderGamma); 
 
-handles.img2save = img2;
-axes(handles.axes4);%escolho axes4
+handles.img2save = img2; %Após o ajuste, criamos uma nova imagem para que possa ser salva
+axes(handles.axes4);
 imshow(img2);
 axes(handles.axes2);
 h=imhist(img2);
 axes(handles.axes2);
-plot(h/max(h));
+plot(h/max(h), 'm', 'LineWidth', 1.3);  %dividimos pelo máximo do histograma para normalizar
 hold on
 hc=cumsum(h);
-plot(hc/max(hc), 'r');
+plot(hc/max(hc), 'g', 'LineWidth', 2);
 hold off
-%imshow(cumsum(imhist(img),2)); %not working
 
 guidata(hObject,handles);
 
@@ -212,3 +211,87 @@ guidata(hObject,handles);
 
 % --- If Enable == 'on', executes on mouse press in 5 pixel border.
 % --- Otherwise, executes on mouse press in 5 pixel border or over undoB.
+
+
+% --- Executes on selection change in popupFilter.
+function popupFilter_Callback(hObject, eventdata, handles)
+%handles=guidata(hObject);
+
+handles.filterValue = get(hObject, 'Value');
+disp(handles.filterValue);
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function popupFilter_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function editSize_Callback(hObject, eventdata, handles)
+handles.size = str2double(get(hObject, 'String'));
+disp(handles.size);
+guidata(hObject,handles);
+
+
+
+% --- Executes during object creation, after setting all properties.
+function editSize_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function editP1_Callback(hObject, eventdata, handles)
+handles.P1 = str2double(get(hObject, 'String'));
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function editP1_CreateFcn(hObject, eventdata, handles)
+
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function editP2_Callback(hObject, eventdata, handles)
+handles.P2 = str2double(get(hObject, 'String'));
+guidata(hObject,handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function editP2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to editP2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbuttonApply.
+function pushbuttonApply_Callback(hObject, eventdata, handles)
+switch(handles.filterValue)
+    case 1  %nada
+
+    case 2  %filtro de média
+       
+    case 3  %filtro gaussiano
+       
+    case 4  %sobel vertical
+       
+    case 5 %sobel horizontal
+        
+    case 6 %sobel vertical + horizontal
+        
+    case 7 %filtro laplaciano
+end
